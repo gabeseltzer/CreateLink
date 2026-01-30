@@ -72,21 +72,51 @@ export function copyToClipboard(document: Document, text: string): Promise<void>
 
 // fall back if Clipboard API failed
 function copyToClipboardHTML(document: Document, text: string) {
-  // it does not copy the text to clipboard if it's hidden completely by "display: none".
-  const textarea = document.createElement('textarea')
-  textarea.setAttribute('style', `
-        position: absolute;
-        width: 0.1px;
-        height: 0.1px;
-        right: 200%;
-        opacity: 0.1;
-      `)
-  textarea.setAttribute('id', 'clipboard_object')
-  document.body.appendChild(textarea)
-  textarea.appendChild(document.createTextNode(text))
-  textarea.select()
-  document.execCommand("copy");
-  textarea.parentNode.removeChild(textarea)
+  // Check if text contains HTML (specifically an anchor tag)
+  const containsHTML = /<a\s+[^>]*href\s*=/i.test(text)
+  
+  if (containsHTML) {
+    // Use a contenteditable div to preserve HTML formatting
+    const div = document.createElement('div')
+    div.setAttribute('style', `
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          right: 200%;
+          opacity: 0.01;
+        `)
+    div.setAttribute('contenteditable', 'true')
+    div.setAttribute('id', 'clipboard_object')
+    div.innerHTML = text
+    document.body.appendChild(div)
+    
+    // Select the content
+    const range = document.createRange()
+    range.selectNodeContents(div)
+    const selection = document.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+    
+    document.execCommand("copy")
+    selection.removeAllRanges()
+    div.parentNode.removeChild(div)
+  } else {
+    // Use textarea for plain text (faster and simpler)
+    const textarea = document.createElement('textarea')
+    textarea.setAttribute('style', `
+          position: absolute;
+          width: 0.1px;
+          height: 0.1px;
+          right: 200%;
+          opacity: 0.1;
+        `)
+    textarea.setAttribute('id', 'clipboard_object')
+    document.body.appendChild(textarea)
+    textarea.appendChild(document.createTextNode(text))
+    textarea.select()
+    document.execCommand("copy")
+    textarea.parentNode.removeChild(textarea)
+  }
   return text
 }
 
