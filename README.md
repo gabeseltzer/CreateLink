@@ -1,10 +1,9 @@
-
-
+<!-- markdownlint-disable md033 -->
 # Create Link
 
 Source code of [Create Link](https://chrome.google.com/webstore/detail/create-link/gcmghdmnkfdbncmnmlkkglmnnhagajbm).
 
-# Filters
+## Filters
 
 This feature is basically for developers.
 
@@ -21,20 +20,20 @@ The configuration above gives you following text.
 <a href="http://example.com/">Example Domain</a> 2017-03-14
 ```
 
-# Development
+## Development
 
-## Build
+### Build
 
 webpack is used for building application code. Run
 
 ```sh
 make watch
 ```
+
 to watch the changes and generate js files.
 
-## Test
+### Test
 
 ```sh
 make test
 ```
-

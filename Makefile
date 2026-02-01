@@ -20,5 +20,8 @@ $(SRC):
 watch:
 	./node_modules/.bin/webpack -w --mode=development
 
+test:
+	npm test
+
 clean:
 	rm -rf .build/

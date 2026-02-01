@@ -1,5 +1,5 @@
 
-import fmt, { FormatDefinition } from './formats'
+import fmt, { FormatDefinition, downloadSettingsAsJson, readSettingsFromFile } from './formats'
 
 function oldFormats(): FormatDefinition[] {
   const prefs = localStorage.format_preferences
@@ -66,6 +66,18 @@ class OptionsPage {
     document.getElementById("configure-shortcut").addEventListener('click', function () {
       chrome.tabs.create({ url: 'chrome://extensions/configureCommands' });
     }, false);
+
+    document.getElementById("export-settings").addEventListener('click', () => {
+      this.exportSettings()
+    }, false);
+
+    document.getElementById("import-settings").addEventListener('click', () => {
+      document.getElementById("import-file-input").click()
+    }, false);
+
+    document.getElementById("import-file-input").addEventListener('change', (ev) => {
+      this.importSettings(ev)
+    }, false);
   }
 
   fillVersion() {
@@ -130,6 +142,34 @@ class OptionsPage {
       },
     });
     return ctable
+  }
+
+  exportSettings() {
+    const settings = fmt.exportSettings()
+    downloadSettingsAsJson(settings)
+  }
+
+  async importSettings(ev: Event) {
+    const input = ev.target as HTMLInputElement
+    if (!input.files || input.files.length === 0) {
+      return
+    }
+
+    const file = input.files[0]
+    try {
+      const settings = await readSettingsFromFile(file)
+      const result = fmt.importSettings(settings)
+      if (result.success) {
+        alert("Settings imported successfully. The page will reload.")
+        location.reload()
+      } else {
+        alert(`Failed to import settings: ${result.error}`)
+      }
+    } catch (e) {
+      alert(`Failed to import settings: ${e.message}`)
+    } finally {
+      input.value = ""  // Reset file input
+    }
   }
 }
 
